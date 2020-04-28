@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.RoleMapper">
+
+    <!-- 查询所有角色 -->
+    <select id="selectAllRole" resultType="com.hlc.carrent.domain.Role">
+        SELECT * FROM sys_role
+        <where>
+            <if test="rolename!=null">
+                and rolename LIKE concat('%',#{rolename},'%')
+            </if>
+            <if test="roledesc!=null">
+                and roledesc LIKE concat('%',#{roledesc},'%')
+            </if>
+            <if test="available!=null">
+                and available = #{available}
+            </if>
+        </where>
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllRoleCount" resultType="int">
+        SELECT COUNT(1) FROM sys_role
+    </select>
+    <!--添加角色-->
+    <insert id="addRole" parameterType="com.hlc.carrent.domain.Role">
+        INSERT INTO sys_role ( rolename, roledesc, available )
+        VALUES
+            ( #{rolename}, #{roledesc},#{available} );
+    </insert>
+    <!--修改角色-->
+    <update id="updateRole" parameterType="com.hlc.carrent.domain.Role">
+        UPDATE sys_role
+        SET rolename = #{rolename},
+            roledesc = #{roledesc},
+            available = #{available}
+        WHERE roleid = #{roleid}
+    </update>
+    <!--删除角色-->
+    <delete id="deleteRole">
+        DELETE FROM sys_role WHERE roleid = #{roleid}
+    </delete>
+    <!--根据角色id 删除sys_role_menu里面的数据-->
+    <delete id="deleteRoleMenuByRid">
+        DELETE FROM sys_role_menu WHERE rid = #{roleid}
+    </delete>
+    <!--根据角色id 删除sys_role_user里面的数据-->
+    <delete id="deleteRoleUserByRid">
+        DELETE FROM sys_role_user WHERE rid = #{roleid}
+    </delete>
+    <!--保存角色和菜单的关系-->
+    <insert id="saveRoleMenu">
+        INSERT INTO sys_role_menu(rid,mid) value (#{rid},#{mid})
+    </insert>
+    <!--根据用户id删除sys_role_user里面的数据-->
+    <delete id="deleteRoleUserByUid">
+        DELETE FROM sys_role_user WHERE uid =#{userid}
+    </delete>
+    <!--根据用户id查询角色列表-->
+    <select id="selectRoleByUid" resultType="com.hlc.carrent.domain.Role">
+        SELECT t1.* FROM sys_role t1 INNER JOIN sys_role_user t2
+        ON (t1.roleid = t2.rid) WHERE t2.uid = #{uid}
+        AND t1.available = #{available}
+    </select>
+</mapper>

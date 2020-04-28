@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.NewsMapper">
+
+    <!-- 查询所有公告 -->
+    <select id="selectAllNews" resultType="com.hlc.carrent.domain.News">
+        SELECT * FROM sys_news
+        <where>
+            <if test="title!=null">
+                and title LIKE concat('%',#{title},'%')
+            </if>
+            <if test="content!=null">
+                and content LIKE concat('%',#{content},'%')
+            </if>
+            <if test="startTime!=null">
+                and createtime >= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and createtime &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY createtime desc
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllNewsCount" resultType="int">
+        SELECT COUNT(1) FROM sys_news
+    </select>
+    <!--添加公告-->
+    <insert id="addNews" parameterType="com.hlc.carrent.domain.News">
+        INSERT INTO sys_news ( title, content, createtime,opername )
+        VALUES
+            ( #{title}, #{content},#{createtime},#{opername} );
+    </insert>
+    <!--修改公告-->
+    <update id="updateNews" parameterType="com.hlc.carrent.domain.News">
+        UPDATE sys_news
+        SET title = #{title},
+            content = #{content},
+            createtime = #{createtime},
+            opername = #{opername}
+        WHERE id = #{id}
+    </update>
+    <!--删除公告-->
+    <delete id="deleteNews">
+        DELETE FROM sys_news WHERE id = #{id}
+    </delete>
+    <!--根据id查询一个公告-->
+    <select id="selectNewById" resultType="com.hlc.carrent.domain.News">
+        SELECT * FROM sys_news WHERE id = #{id}
+    </select>
+
+</mapper>

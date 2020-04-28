@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.UserMapper">
+    
+    <!--登录查询-->
+    <select id="login" resultType="com.hlc.carrent.domain.User">
+        SELECT * FROM sys_user WHERE loginname = #{loginname}
+    </select>
+
+    <!--用户查询-->
+    <select id="selectAllUser" resultType="com.hlc.carrent.domain.User">
+        SELECT * FROM sys_user
+        <where>
+            <if test="realname!=null and realname !=''">
+                and realname like concat("%",#{realname},"%")
+            </if>
+            <if test="loginname!=null and loginname !=''">
+                and loginname like concat("%",#{loginname},"%")
+            </if>
+            <if test="identity!=null and identity !=''">
+                and identity like concat("%",#{identity},"%")
+            </if>
+            <if test="address!=null and address !=''">
+                and address like concat("%",#{address},"%")
+            </if>
+            <if test="phone!=null and phone !=''">
+                and phone like concat("%",#{phone},"%")
+            </if>
+            <if test="sex!=null">
+                and sex=#{sex}
+            </if>
+            and type != 1
+        </where>
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllUserCount" resultType="int">
+        SELECT COUNT(1) FROM sys_user
+    </select>
+    <!--添加用户-->
+    <insert id="addUser" parameterType="com.hlc.carrent.domain.User">
+        INSERT INTO sys_user ( loginname, identity, realname,sex,address,phone,pwd,position,type,available)
+        VALUES
+            ( #{loginname}, #{identity},#{realname},#{sex},#{address},#{phone},#{pwd},#{position},#{type},#{available} );
+    </insert>
+    <!--修改用户-->
+    <update id="updateUser" parameterType="com.hlc.carrent.domain.User">
+        UPDATE sys_user
+        SET loginname = #{loginname},
+            identity = #{identity},
+            realname = #{realname},
+            sex = #{sex},
+            address = #{address},
+            phone = #{phone},
+            pwd = #{pwd},
+            position = #{position},
+            type = #{type},
+            available = #{available}
+        WHERE userid = #{userid}
+    </update>
+    <!--删除用户-->
+    <delete id="deleteUser">
+        DELETE FROM sys_user WHERE userid = #{userid}
+    </delete>
+    <!--根据id重置用户密码-->
+    <update id="resetUserPwd">
+        UPDATE sys_user
+        SET pwd = #{pwd}
+        WHERE userid = #{userid}
+    </update>
+    <!--保存用户和角色的关系-->
+    <insert id="insertUserRole">
+        INSERT INTO sys_role_user(uid,rid) VALUES(#{uid},#{rid})
+    </insert>
+</mapper>

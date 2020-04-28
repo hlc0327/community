@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.CarMapper">
+
+    <!-- 查询所有车辆 -->
+    <select id="selectAllCar" resultType="com.hlc.carrent.domain.Car">
+        SELECT * FROM bus_car
+        <where>
+            <if test="carnumber!=null">
+                and carnumber LIKE concat('%',#{carnumber},'%')
+            </if>
+            <if test="cartype!=null">
+                and cartype LIKE concat('%',#{cartype},'%')
+            </if>
+            <if test="color!=null">
+                and color LIKE concat('%',#{color},'%')
+            </if>
+            <if test="description!=null">
+                and description LIKE concat('%',#{description},'%')
+            </if>
+            <if test="isrenting!=null">
+                and isrenting = #{isrenting}
+            </if>
+
+        </where>
+        ORDER BY createtime desc
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllCarCount" resultType="int">
+        SELECT COUNT(1) FROM bus_car
+    </select>
+    <!--添加车辆-->
+    <insert id="addCar" parameterType="com.hlc.carrent.domain.Car">
+        INSERT INTO bus_car (carnumber,cartype, color, price,rentprice,
+                    deposit,isrenting,description,carimg,createtime)
+        VALUES
+            (#{carnumber}, #{cartype}, #{color},#{price},#{rentprice},
+            #{deposit},#{isrenting},#{description},#{carimg},#{createtime});
+    </insert>
+    <!--修改车辆-->
+    <update id="updateCar" parameterType="com.hlc.carrent.domain.Car">
+        UPDATE bus_car
+        SET
+            cartype = #{cartype},
+            color = #{color},
+            price = #{price},
+            rentprice = #{rentprice},
+            deposit = #{deposit},
+            isrenting = #{isrenting},
+            description = #{description},
+            carimg = #{carimg},
+            createtime = #{createtime}
+        WHERE carnumber = #{carnumber}
+    </update>
+    <!--删除车辆-->
+    <delete id="deleteCar">
+        DELETE FROM bus_car WHERE carnumber = #{carnumber}
+    </delete>
+    <!--根据carnumber查询-->
+    <select id="selectCarByCarNumber" resultType="com.hlc.carrent.domain.Car">
+        SELECT * FROM bus_car WHERE carnumber = #{carnumber}
+    </select>
+    <!--根据carnumber修改出租状态()-->
+    <update id="updateCarIsrentingByCarNumber" parameterType="com.hlc.carrent.domain.Car">
+        UPDATE bus_car
+        SET
+            isrenting = #{isrenting}
+        WHERE carnumber = #{carnumber}
+    </update>
+</mapper>

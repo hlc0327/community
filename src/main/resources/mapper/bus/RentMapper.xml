@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.RentMapper">
+
+    <!-- 查询所有出租单号 -->
+    <select id="selectAllRent" resultType="com.hlc.carrent.domain.Rent">
+        SELECT * FROM bus_rent
+        <where>
+            <if test="rentid!=null">
+                and rentid LIKE concat('%',#{rentid},'%')
+            </if>
+            <if test="carnumber!=null">
+                and carnumber LIKE concat('%',#{carnumber},'%')
+            </if>
+            <if test="identity!=null">
+                and identity LIKE concat('%',#{identity},'%')
+            </if>
+            <if test="startTime!=null">
+                and createtime >= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and createtime <![CDATA[<=]]>#{endTime}
+            </if>
+            <if test="rentflag!=null">
+                and rentflag LIKE concat('%',#{rentflag},'%')
+            </if>
+
+        </where>
+        ORDER BY createtime desc
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllRentCount" resultType="int">
+        SELECT COUNT(1) FROM bus_rent
+    </select>
+
+    <!--添加出租单号-->
+    <insert id="addRent" parameterType="com.hlc.carrent.domain.Rent">
+        INSERT INTO bus_Rent (rentid,price,begindate,returndate,
+                            rentflag,carnumber,identity,opername,createtime)
+
+        VALUES (#{rentid},#{price},#{begindate},
+                #{returndate},#{rentflag},#{carnumber},
+                #{identity},#{opername},#{createtime});
+    </insert>
+
+    <!--修改出租单号-->
+    <update id="updateRent" parameterType="com.hlc.carrent.domain.Rent">
+        UPDATE bus_rent
+        SET
+            rentid = #{rentid},
+            price = #{price},
+            begindate = #{begindate},
+            returndate = #{returndate},
+            rentflag = #{rentflag},
+            carnumber = #{carnumber},
+            identity = #{identity},
+            opername = #{opername},
+            createtime = #{createtime}
+        WHERE rentid = #{rentid}
+    </update>
+    <!--删除出租单号-->
+    <delete id="deleteRent">
+        DELETE FROM bus_rent WHERE rentid = #{rentid}
+    </delete>
+
+    <!--根据出租单号查询出租信息-->
+    <select id="selectRentByRentId" resultType="com.hlc.carrent.domain.Rent">
+        SELECT * FROM bus_rent WHERE rentid = #{rentid}
+    </select>
+</mapper>

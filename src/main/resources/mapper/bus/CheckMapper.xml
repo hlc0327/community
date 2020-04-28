@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.CheckMapper">
+
+    <!-- 查询所有车辆 -->
+    <select id="selectAllCheck" resultType="com.hlc.carrent.domain.Check">
+        SELECT * FROM bus_check
+        <where>
+            <if test="checkid!=null">
+                and checkid like concat("%",#{checkid},"%")
+            </if>
+            <if test="rentid!=null">
+                and rentid like concat("%",#{rentid},"%")
+            </if>
+            <if test="problem!=null">
+                and problem like concat("%",#{problem},"%")
+            </if>
+            <if test="checkdesc!=null">
+                and checkdesc like concat("%",#{checkdesc},"%")
+            </if>
+            <if test="startTime!=null">
+                and checkdate >=#{startTime}
+            </if>
+            <if test="endTime!=null">
+                and checkdate <![CDATA[<=]]> #{endTime}
+            </if>
+        </where>
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllCheckCount" resultType="int">
+        SELECT COUNT(1) FROM bus_check
+    </select>
+
+    <!--保存检查单数据-->
+    <insert id="saveCheck" parameterType="com.hlc.carrent.domain.Check">
+        INSERT INTO bus_check (checkid,checkdate,checkdesc,problem,
+                               paymoney,opername,rentid,createtime)
+        VALUES
+            (#{checkid},#{checkdate},#{checkdesc},#{problem},
+            #{paymoney},#{opername},#{rentid},#{createtime});
+    </insert>
+
+    <!--修改检查单数据-->
+    <update id="updateCheck" parameterType="com.hlc.carrent.domain.Car">
+        UPDATE bus_check
+        SET
+            checkdate = #{checkdate},
+            checkdesc = #{checkdesc},
+            problem = #{problem},
+            paymoney = #{paymoney},
+            opername = #{opername},
+            rentid = #{rentid},
+            createtime = #{createtime}
+        WHERE checkid = #{checkid}
+    </update>
+</mapper>

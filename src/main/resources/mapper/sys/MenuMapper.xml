@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.MenuMapper">
+
+    <!--左侧菜单栏-->
+    <resultMap id="BaseResultMap" type="com.hlc.carrent.domain.Menu">
+        <result column="tid" property="id"/>
+        <result column="tTitle" property="title"/>
+        <result column="tPid" property="pid"/>
+        <result column="tHref" property="href"/>
+        <result column="tSpread" property="spread2"/>
+        <result column="tIcon" property="icon"/>
+        <result column="tAvailable" property="available"/>
+        <result column="tTarget" property="available"/>
+    </resultMap>
+    <select id="selectMenuLeftTree" resultMap="BaseResultMap">
+        SELECT DISTINCT
+        t1.id AS tid,
+        t1.title AS tTitle,
+        t1.pid AS tPid,
+        t1.href AS tHref,
+        t1.spread AS tSpread,
+        t1.icon AS tIcon,
+        t1.available AS tAvailable,
+        t1.target AS tTarget
+        FROM
+        sys_menu t1
+        INNER JOIN sys_role_menu t2
+        INNER JOIN sys_role_user t3
+        ON(t1.id = t2.mid AND t2.rid = t3.rid)
+        AND t1.pid != 0
+        <if test="id != null">
+            AND t3.uid = #{id}
+        </if>
+        <if test="available!=null">
+            and available = #{available}
+        </if>
+    </select>
+
+    <resultMap id="MenuRightTreeResultMap" type="com.hlc.carrent.domain.Menu">
+        <result column="aId" property="id"/>
+        <result column="aTitle" property="title"/>
+        <result column="aIcon" property="icon"/>
+        <result column="aHref" property="href"/>
+        <result column="aSpread" property="spread"/>
+        <collection property="children" ofType="com.hlc.carrent.domain.Menu">
+            <result column="bId" property="id"/>
+            <result column="bTitle" property="title"/>
+            <result column="bIcon" property="icon"/>
+            <result column="bHref" property="href"/>
+            <result column="bSpread" property="spread"/>
+            <collection property="children" ofType="com.hlc.carrent.domain.Menu">
+                <result column="cId" property="id"/>
+                <result column="cTitle" property="title"/>
+                <result column="cIcon" property="icon"/>
+                <result column="cHref" property="href"/>
+                <result column="cSpread" property="spread"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <!--查询菜单管理右边的树-->
+    <select id="selectMenuRightTree" resultMap="MenuRightTreeResultMap">
+        SELECT
+            a.id AS aId,
+            a.title AS aTitle,
+            a.icon AS aIcon,
+            a.href AS aHref,
+        CASE
+
+                WHEN a.spread = '1' THEN
+                'true'
+                WHEN a.spread = '0' THEN
+                'fales'
+        END AS aSpread,
+
+            b.id AS bId,
+            b.title AS bTitle,
+            b.icon AS bIcon,
+            b.href AS bHref,
+        CASE
+                WHEN b.spread = '1' THEN
+                'true'
+                WHEN b.spread = '0' THEN
+                'fales'
+        END AS bSpread,
+            c.id AS cId,
+            c.title AS cTitle,
+            c.icon AS cIcon,
+            c.href AS cHref,
+            CASE
+                WHEN c.spread = '1' THEN
+                'true'
+                WHEN c.spread = '0' THEN
+                'fales'
+                END AS cSpread
+        FROM
+            sys_menu a
+            INNER JOIN sys_menu b ON a.id = b.pid
+            INNER JOIN sys_menu c ON b.id = c.pid
+            AND c.pid != 0;
+    </select>
+
+    <!-- 查询所有菜单 -->
+    <select id="selectAllMenu" resultType="com.hlc.carrent.domain.Menu">
+        SELECT * FROM sys_menu
+        <where>
+            <if test="title != null">
+                and title LIKE concat('%',#{title},'%')
+            </if>
+            <if test="id!=null">
+                and (id=#{id} or pid=#{id})
+            </if>
+            <if test="available!=null">
+                and available = #{available}
+            </if>
+        </where>
+    </select>
+
+    <!--查询菜单的条数-->
+    <select id="selectAllMenuCount" resultType="int">
+        SELECT COUNT(1) FROM sys_menu
+    </select>
+    <!--添加菜单-->
+    <insert id="addMenu" parameterType="com.hlc.carrent.domain.Menu">
+        INSERT INTO sys_menu ( pid, title, href, spread, target, icon, available )
+        VALUES
+            ( #{pid}, #{title}, #{href}, #{spread2},#{target}, #{icon}, #{available} );
+    </insert>
+
+    <!--修改菜单-->
+    <update id="updateMenu" parameterType="com.hlc.carrent.domain.Menu">
+        UPDATE sys_menu
+        SET pid = #{pid},
+            title = #{title},
+            href = #{href},
+            spread = #{spread2},
+            target = #{target},
+            icon = #{icon},
+            available = #{available}
+        WHERE id = #{id}
+    </update>
+
+    <!--根据pid查询菜单数量-->
+    <select id="selectMenuByPid" resultType="Integer">
+        SELECT COUNT(1) FROM sys_menu WHERE pid = #{pid}
+    </select>
+
+    <!--根据id删除菜单-->
+    <delete id="deleteMenu">
+        DELETE FROM sys_menu WHERE id = #{id}
+    </delete>
+
+    <!--根据菜单id 删除sys_role_menu里面的数据-->
+    <delete id="deleteRoleMenuByMid">
+        DELETE FROM sys_role_menu WHERE mid = #{mid}
+    </delete>
+
+    <!--根据角色id查询菜单-->
+    <select id="selectMenuByRoleId" resultType="com.hlc.carrent.domain.Menu">
+        SELECT
+            *
+        FROM
+            sys_menu t1
+        INNER JOIN sys_role_menu t2 ON(t1.id = t2.mid)
+        WHERE t1.available = #{available} AND t2.rid = #{rid}
+    </select>
+
+    <!--查询分配菜单树菜-->
+    <resultMap id="initRoleMenuTreeJson" type="com.hlc.carrent.vo.DtreeVo">
+        <result column="aId" property="id"/>
+        <result column="aPid" property="parentId"/>
+        <result column="aTitle" property="title"/>
+        <result column="aSpread" property="spread"/>
+        <collection property="children" ofType="com.hlc.carrent.vo.DtreeVo">
+            <result column="bId" property="id"/>
+            <result column="bPid" property="parentId"/>
+            <result column="bTitle" property="title"/>
+            <result column="bSpread" property="spread"/>
+            <collection property="children" ofType="com.hlc.carrent.vo.DtreeVo">
+                <result column="cId" property="id"/>
+                <result column="cPid" property="parentId"/>
+                <result column="cTitle" property="title"/>
+                <result column="cSpread" property="spread"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <select id="initRoleMenuTreeJson" resultMap="initRoleMenuTreeJson">
+        SELECT
+        a.id AS aId,
+        a.pid AS aPid,
+        a.title AS aTitle,
+        CASE
+
+        WHEN a.spread = '1' THEN
+        'true'
+        WHEN a.spread = '0' THEN
+        'fales'
+        END AS aSpread,
+
+        b.id AS bId,
+        b.pid AS bPid,
+        b.title AS bTitle,
+        CASE
+        WHEN b.spread = '1' THEN
+        'true'
+        WHEN b.spread = '0' THEN
+        'fales'
+        END AS bSpread,
+        c.id AS cId,
+        c.pid AS cPid,
+        c.title AS cTitle,
+
+        CASE
+        WHEN c.spread = '1' THEN
+        'true'
+        WHEN c.spread = '0' THEN
+        'fales'
+        END AS cSpread
+        FROM
+        sys_menu a
+        INNER JOIN sys_menu b ON a.id = b.pid
+        INNER JOIN sys_menu c ON b.id = c.pid
+        INNER JOIN sys_role_menu t2 ON(c.id = t2.mid)
+        AND c.pid != 0
+        WHERE 1 = 1
+        <if test="available!=null">
+            and a.available = #{available}
+        </if>
+        <if test="rid != null">
+
+            AND t2.rid = 2
+        </if>
+    </select>
+
+    <!-- 查询所有菜单(分配菜单树) -->
+
+    <resultMap id="AllMenuMap" type="com.hlc.carrent.domain.Menu">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="pid" jdbcType="INTEGER" property="pid"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="href" jdbcType="VARCHAR" property="href"/>
+        <result column="spread" jdbcType="VARCHAR" property="spread2"/>
+        <result column="target" jdbcType="VARCHAR" property="target"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="available" jdbcType="INTEGER"
+                property="available"/>
+    </resultMap>
+    <select id="queryAllMenu" resultMap="AllMenuMap">
+        select *
+        from sys_menu
+        <where>
+            <if test="title!=null and title!=''">
+                and title like concat("%",#{title},"%")
+            </if>
+            <if test="available!=null">
+                and available=#{available}
+            </if>
+            <if test="id!=null">
+                and (id=#{id} or pid=#{id})
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据角色ID查询菜单 -->
+    <select id="queryMenuByRoleId" resultMap="AllMenuMap">
+		select t1.* from
+		sys_menu t1 inner join sys_role_menu t2 on(t1.id=t2.mid) where
+		t2.rid=#{rid} and t1.available=#{available}
+	</select>
+    <!--根据用户ID查询菜单-->
+    <select id="selectMenuByUid" resultType="com.hlc.carrent.domain.Menu">
+        SELECT DISTINCT
+            t1.*
+        FROM
+            sys_menu t1
+            INNER JOIN sys_role_menu t2
+            INNER JOIN sys_role_user t3
+            ON(t1.id = t2.mid AND t2.rid = t3.rid)
+
+        WHERE t3.uid = #{uid} AND t1.available = #{available}
+    </select>
+</mapper>

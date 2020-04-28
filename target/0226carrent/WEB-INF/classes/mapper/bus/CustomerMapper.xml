@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.CustomerMapper">
+
+    <!-- 查询所有客户 -->
+    <select id="selectAllCustomer" resultType="com.hlc.carrent.domain.Customer">
+        SELECT * FROM bus_customer
+        <where>
+            <if test="identity!=null">
+                and identity LIKE concat('%',#{identity},'%')
+            </if>
+            <if test="custname!=null">
+                and custname LIKE concat('%',#{custname},'%')
+            </if>
+            <if test="phone!=null">
+                and phone LIKE concat('%',#{phone},'%')
+            </if>
+            <if test="career!=null">
+                and career LIKE concat('%',#{career},'%')
+            </if>
+            <if test="address!=null">
+                and address LIKE concat('%',#{address},'%')
+            </if>
+            <if test="sex!=null">
+                and sex = #{sex}
+            </if>
+
+        </where>
+        ORDER BY createtime desc
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllCustomerCount" resultType="int">
+        SELECT COUNT(1) FROM bus_customer
+    </select>
+    <!--添加客户-->
+    <insert id="addCustomer" parameterType="com.hlc.carrent.domain.Customer">
+        INSERT INTO bus_customer (identity,custname, sex, address,phone,career,createtime )
+        VALUES
+            (#{identity}, #{custname}, #{sex},#{address},#{phone},#{career},#{createtime} );
+    </insert>
+    <!--修改客户-->
+    <update id="updateCustomer" parameterType="com.hlc.carrent.domain.Customer">
+        UPDATE bus_customer
+        SET identity = #{identity},
+            custname = #{custname},
+            sex = #{sex},
+            address = #{address},
+            phone = #{phone},
+            career = #{career},
+            createtime = #{createtime}
+        WHERE identity = #{identity}
+    </update>
+    <!--删除客户-->
+    <delete id="deleteCustomer">
+        DELETE FROM bus_customer WHERE identity = #{identity}
+    </delete>
+    <!--根据身份证查询客户信息:selectCustomerByIdentity-->
+    <select id="selectCustomerByIdentity" resultType="com.hlc.carrent.domain.Customer">
+        SELECT * FROM bus_customer WHERE identity = #{identity}
+    </select>
+</mapper>

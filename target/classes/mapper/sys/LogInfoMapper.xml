@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.hlc.carrent.mapper.LogInfoMapper">
+
+    <!-- 查询所有日志 -->
+    <select id="selectAllLogInfo" resultType="com.hlc.carrent.domain.LogInfo">
+        SELECT * FROM sys_log_login
+        <where>
+            <if test="loginname!=null">
+                and loginname LIKE concat('%',#{loginname},'%')
+            </if>
+            <if test="loginip!=null">
+                and loginip LIKE concat('%',#{loginip},'%')
+            </if>
+            <if test="startTime!=null">
+                and logintime >= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and logintime &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY logintime desc
+    </select>
+    <!--查询菜单的条数-->
+    <select id="selectAllLogInfoCount" resultType="int">
+        SELECT COUNT(1) FROM sys_log_login
+    </select>
+    <!--添加日志-->
+    <insert id="addLogInfo" parameterType="com.hlc.carrent.domain.LogInfo">
+        INSERT INTO sys_log_login ( loginname, loginip, logintime )
+        VALUES
+            ( #{loginname}, #{loginip},#{logintime} );
+    </insert>
+    <!--修改日志-->
+    <update id="updateLogInfo" parameterType="com.hlc.carrent.domain.LogInfo">
+        UPDATE sys_log_login
+        SET loginname = #{loginname},
+            loginip = #{loginip},
+            logintime = #{logintime}
+        WHERE id = #{id}
+    </update>
+    <!--删除日志-->
+    <delete id="deleteLogInfo">
+        DELETE FROM sys_log_login WHERE id = #{id}
+    </delete>
+
+</mapper>
